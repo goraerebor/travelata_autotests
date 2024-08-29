@@ -12,9 +12,9 @@ def base_url():
 ])
 def test_get_api(post_id, expected_id, base_url):
     try:
-        responce = requests.get(f'{base_url}{post_id}')
-        assert responce.status_code == 200
-        json_response = responce.json()
+        response = requests.get(f'{base_url}{post_id}')
+        assert response.status_code == 200
+        json_response = response.json()
         assert 'id' in json_response, "Ключ 'id' отсутствует и Json ответе"
         assert 'body' in json_response, "Ключ 'body' отсутствует и Json ответе"
         assert 'title' in json_response, "Ключ 'title' отсутствует и Json ответе"
