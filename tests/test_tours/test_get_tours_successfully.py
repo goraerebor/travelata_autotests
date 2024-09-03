@@ -1,28 +1,42 @@
 import requests
 import pytest
-import re
-from config import HEADERS, PARAMS
-
-
-def base_url():
-    return 'https://api-gateway.travelata.ru/frontend/tours'
+import datetime
+from config import base_url
 
 
 def response_data():
+    HEADERS = {
+        'origin': 'https://travelata.ru',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+    }
+    PARAMS = {
+        'limit': 2000,
+        'departureCity': 2,
+        'country': 92,
+        'checkInDateRange[from]': '2024-09-30',
+        'checkInDateRange[to]': '2024-09-30',
+        'nightRange[from]': 7,
+        'nightRange[to]': 10,
+        'touristGroup[adults]': 2,
+        'touristGroup[kids]': 1,
+        'touristGroup[infants]': 0,
+        'touristGroup[kidsAges][]': 8
+    }
+
     try:
-        response = requests.get(base_url(), headers=HEADERS, params=PARAMS)
+        response = requests.get(f'{base_url}frontend/tours', headers=HEADERS, params=PARAMS)
         response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         pytest.fail(f"HTTP запрос не выполнен: {e}")
 
 
-def test_connect():
+def test_connecttest_get_success_response_code():
     response = response_data()
     assert response.status_code == 200
 
 
-def test_body():
+def test_get_success_response_result():
     response = response_data()
     json_response = response.json()
 
@@ -30,7 +44,7 @@ def test_body():
     assert 'result' in json_response and json_response['result'] is not None
 
 
-def test_result_tours():
+def test_get_success_result_tours():
     response = response_data()
     json_response = response.json()
 
@@ -38,7 +52,11 @@ def test_result_tours():
     for tour in tours:
         assert 'id' in tour and tour['id'] is not None
         date_pattern = r'\d{4}-\d{2}-\d{2}'
-        assert 'checkInDate' in tour and re.match(date_pattern, tour['checkInDate'])
+        assert 'checkInDate' in tour
+        try:
+            datetime.datetime.strptime(tour['checkInDate'], '%Y-%m-%d')
+        except ValueError:
+            pytest.fail(f"Неверный формат даты: {tour['checkInDate']}")
         assert 'price' in tour and tour['price'] > 0
         assert 'nights' in tour
         assert 'tour' in tour['nights'] and tour['nights']['tour'] > 0
@@ -50,7 +68,7 @@ def test_result_tours():
         assert 'kidsAges' in tour['touristGroup'] and tour['touristGroup']['kidsAges']
 
 
-def test_result_distance():
+def test_tour_fields_are_valid():
     response = response_data()
     json_response = response.json()
 
