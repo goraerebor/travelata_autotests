@@ -3,8 +3,8 @@ import pytest
 import datetime
 from config import base_url
 
-
-def response_data():
+@pytest.fixture
+def setupRequest():
     HEADERS = {
         'origin': 'https://travelata.ru',
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
@@ -31,27 +31,22 @@ def response_data():
         pytest.fail(f"HTTP запрос не выполнен: {e}")
 
 
-def test_connecttest_get_success_response_code():
-    response = response_data()
+def test_get_success_response_result(setupRequest):
+    response = setupRequest
     assert response.status_code == 200
-
-
-def test_get_success_response_result():
-    response = response_data()
     json_response = response.json()
 
     assert json_response.get('success') == True
     assert 'result' in json_response and json_response['result'] is not None
 
 
-def test_get_success_result_tours():
-    response = response_data()
+def test_get_success_result_tours(setupRequest):
+    response = setupRequest
     json_response = response.json()
 
     tours = json_response['result']['tours']
     for tour in tours:
         assert 'id' in tour and tour['id'] is not None
-        date_pattern = r'\d{4}-\d{2}-\d{2}'
         assert 'checkInDate' in tour
         try:
             datetime.datetime.strptime(tour['checkInDate'], '%Y-%m-%d')
@@ -68,8 +63,8 @@ def test_get_success_result_tours():
         assert 'kidsAges' in tour['touristGroup'] and tour['touristGroup']['kidsAges']
 
 
-def test_tour_fields_are_valid():
-    response = response_data()
+def test_tour_fields_are_valid(setupRequest):
+    response = setupRequest
     json_response = response.json()
 
     tours = json_response['result']['tours']
