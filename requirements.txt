@@ -1,0 +1,4 @@
+lighter-sdk
+pandas
+numpy
+scipy
